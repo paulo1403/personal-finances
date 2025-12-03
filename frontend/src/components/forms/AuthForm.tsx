@@ -1,7 +1,10 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { authService } from '../../services/api/auth';
-import { useAuthStore } from '../../services/store/useAuthStore';
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { authService } from '../../services/api/auth'
+import { useAuthStore } from '../../services/store/useAuthStore'
+import { Button } from '../ui/button'
+import { Input } from '../ui/input'
+import { Label } from '../ui/label'
 
 interface LoginFormProps {
   isLogin?: boolean;
@@ -42,43 +45,43 @@ export function AuthForm({ isLogin = true }: LoginFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+        <div className="rounded-md bg-red-50 p-4 text-sm text-red-800 border border-red-200">
           {error}
         </div>
       )}
 
-      <div>
-        <label htmlFor="email" className="block text-sm font-medium text-slate-700">Email</label>
-        <input
+      <div className="space-y-2">
+        <Label htmlFor="email">Email</Label>
+        <Input
           id="email"
           type="email"
+          placeholder="tu@email.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:border-blue-500"
         />
       </div>
 
-      <div>
-        <label htmlFor="password" className="block text-sm font-medium text-slate-700">Contraseña</label>
-        <input
+      <div className="space-y-2">
+        <Label htmlFor="password">Contraseña</Label>
+        <Input
           id="password"
           type="password"
+          placeholder="••••••••"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
           minLength={6}
-          className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:border-blue-500"
         />
       </div>
 
-      <button
+      <Button
         type="submit"
         disabled={loading}
-        className="w-full px-4 py-2 font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
+        className="w-full"
       >
         {loading ? 'Procesando...' : isLogin ? 'Iniciar sesión' : 'Registrarse'}
-      </button>
+      </Button>
     </form>
   );
 }

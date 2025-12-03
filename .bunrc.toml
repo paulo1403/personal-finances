@@ -1,0 +1,11 @@
+[install]
+# Use workspaces
+workspaces = true
+
+[scripts]
+# Allow running scripts from workspaces
+allow-npm-args = true
+
+[packageManager]
+# Use bun as default
+default = "bun"

@@ -1,5 +1,7 @@
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+import { useNavigate } from 'react-router-dom'
+import { LogOut } from 'lucide-react'
+import { useAuth } from '../../hooks/useAuth'
+import { Button } from '../ui/button'
 
 export function Navbar() {
   const navigate = useNavigate();
@@ -11,9 +13,9 @@ export function Navbar() {
   };
 
   return (
-    <nav className="bg-white shadow">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+    <nav className="border-b border-slate-200 bg-white shadow-sm">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex h-16 items-center justify-between">
           <div className="flex items-center">
             <h1 className="text-2xl font-bold text-blue-600">💰 Finances</h1>
           </div>
@@ -21,17 +23,18 @@ export function Navbar() {
           {user && (
             <div className="flex items-center gap-4">
               <span className="text-sm text-slate-600">{user.email}</span>
-              <button
-                type="button"
+              <Button
                 onClick={handleLogout}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded hover:bg-red-700"
+                variant="destructive"
+                size="sm"
               >
+                <LogOut className="mr-2 h-4 w-4" />
                 Logout
-              </button>
+              </Button>
             </div>
           )}
         </div>
       </div>
     </nav>
-  );
+  )
 }
