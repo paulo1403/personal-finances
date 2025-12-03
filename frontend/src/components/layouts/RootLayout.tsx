@@ -17,7 +17,7 @@ export function RootLayout({ children }: RootLayoutProps) {
       {!isLoginPage && <Navbar />}
       <div className="flex flex-1 overflow-hidden">
         {isAuthenticated && <Sidebar />}
-        <main className="flex-1 overflow-auto">{children}</main>
+        <main className="flex-1 overflow-auto p-6 max-w-full">{children}</main>
       </div>
     </div>
   )

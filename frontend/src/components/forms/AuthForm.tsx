@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { authService } from '../../services/api/auth'
 import { useAuthStore } from '../../services/store/useAuthStore'
 import { useToast } from '../../hooks/useToast'
+import { useLoader } from '../../contexts/LoaderContext'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Label } from '../ui/label'
@@ -21,18 +22,18 @@ export function AuthForm({ isLogin = true }: AuthFormProps) {
   const navigate = useNavigate()
   const setAuth = useAuthStore((state) => state.setAuth)
   const { success, error: showError } = useToast()
+  const { showLoader, hideLoader } = useLoader()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
+    const message = isLogin ? 'Iniciando sesión...' : 'Creando cuenta...'
+    showLoader(message)
 
     try {
-      let response: any
-      if (isLogin) {
-        response = await authService.login(email, password)
-      } else {
-        response = await authService.register(email, password, firstName, lastName, currency)
-      }
+      const response = isLogin
+        ? await authService.login(email, password)
+        : await authService.register(email, password, firstName, lastName, currency)
 
       if (response.data.success && response.data.data) {
         const { id, email: userEmail, firstName: fName, lastName: lName, token } = response.data.data
@@ -42,14 +43,16 @@ export function AuthForm({ isLogin = true }: AuthFormProps) {
         )
         localStorage.setItem('token', token)
         
-        const message = isLogin ? 'Sesión iniciada correctamente' : 'Cuenta creada exitosamente'
-        success(message)
+        const successMessage = isLogin ? 'Sesión iniciada correctamente' : 'Cuenta creada exitosamente'
+        success(successMessage)
         
         setTimeout(() => {
+          hideLoader()
           navigate('/dashboard')
         }, 500)
       }
     } catch (err) {
+      hideLoader()
       const error = err as { response?: { data?: { error?: string } } }
       const errorMessage = error.response?.data?.error || (isLogin ? 'Error al iniciar sesión' : 'Error al registrarse')
       showError(errorMessage)
