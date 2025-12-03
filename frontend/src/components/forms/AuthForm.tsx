@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { authService } from '../../services/api/auth'
 import { useAuthStore } from '../../services/store/useAuthStore'
-import { useNotificationStore } from '../../services/store/useNotificationStore'
+import { useToast } from '../../hooks/useToast'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Label } from '../ui/label'
@@ -20,7 +20,7 @@ export function AuthForm({ isLogin = true }: AuthFormProps) {
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
   const setAuth = useAuthStore((state) => state.setAuth)
-  const addNotification = useNotificationStore((state) => state.addNotification)
+  const { success, error: showError } = useToast()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -43,7 +43,7 @@ export function AuthForm({ isLogin = true }: AuthFormProps) {
         localStorage.setItem('token', token)
         
         const message = isLogin ? 'Sesión iniciada correctamente' : 'Cuenta creada exitosamente'
-        addNotification(message, 'success', 3000)
+        success(message)
         
         setTimeout(() => {
           navigate('/dashboard')
@@ -52,7 +52,7 @@ export function AuthForm({ isLogin = true }: AuthFormProps) {
     } catch (err) {
       const error = err as { response?: { data?: { error?: string } } }
       const errorMessage = error.response?.data?.error || (isLogin ? 'Error al iniciar sesión' : 'Error al registrarse')
-      addNotification(errorMessage, 'error')
+      showError(errorMessage)
     } finally {
       setLoading(false)
     }
