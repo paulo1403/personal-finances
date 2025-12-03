@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query'
 import { ThemeProvider } from './providers/ThemeProvider'
 import { RootLayout } from './components/layouts/RootLayout'
+import { NotificationContainer } from './components/common/NotificationContainer'
 import { LoginPage } from './pages/auth/LoginPage'
 import { DashboardPage } from './pages/dashboard/DashboardPage'
 import { useAuth } from './hooks/useAuth'
@@ -18,6 +19,7 @@ function App() {
     <ThemeProvider>
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
+          <NotificationContainer />
           <RootLayout>
             <Routes>
               <Route path="/login" element={<LoginPage />} />

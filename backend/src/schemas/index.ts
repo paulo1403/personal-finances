@@ -8,8 +8,8 @@ export const credentialsSchema = t.Object({
 export const registerSchema = t.Object({
   email: t.String({ format: 'email' }),
   password: t.String({ minLength: 6 }),
-  firstName: t.Optional(t.String({ minLength: 1 })),
-  lastName: t.Optional(t.String({ minLength: 1 })),
+  firstName: t.Optional(t.String()),
+  lastName: t.Optional(t.String()),
   currency: t.Optional(t.String()),
 })
 

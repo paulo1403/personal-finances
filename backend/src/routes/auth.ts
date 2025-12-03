@@ -10,47 +10,72 @@ export const authRouter = new Elysia()
       .post(
         '/register',
         async ({ body, prisma, jwt, set }) => {
-          const { email, password, firstName, lastName, currency } = body
+          try {
+            console.log('🔐 [REGISTER] Received request body:', body)
 
-          // Check if user already exists
-          const existingUser = await prisma.user.findUnique({
-            where: { email },
-          })
+            const { email, password, firstName, lastName, currency } = body
 
-          if (existingUser) {
-            set.status = 409
-            throw new Error('User already exists')
-          }
+            console.log('📧 [REGISTER] Processing registration for:', email)
 
-          const passwordHash = await hashPassword(password)
-          const fullName = [firstName, lastName].filter(Boolean).join(' ') || undefined
+            // Check if user already exists
+            const existingUser = await prisma.user.findUnique({
+              where: { email },
+            })
 
-          const user = await prisma.user.create({
-            data: {
-              email,
-              passwordHash,
-              firstName,
-              lastName,
-              fullName,
-              currency: currency || 'USD',
-            },
-          })
+            if (existingUser) {
+              console.log('⚠️  [REGISTER] User already exists:', email)
+              set.status = 409
+              return {
+                success: false,
+                error: 'El usuario ya existe',
+              }
+            }
 
-          const token = await jwt.sign({
-            id: user.id,
-            email: user.email,
-          })
+            console.log('🔒 [REGISTER] Hashing password...')
+            const passwordHash = await hashPassword(password)
+            const fullName = [firstName, lastName].filter(Boolean).join(' ') || undefined
 
-          set.status = 201
-          return {
-            success: true,
-            data: {
+            console.log('💾 [REGISTER] Creating user in database...')
+            const user = await prisma.user.create({
+              data: {
+                email,
+                passwordHash,
+                firstName: firstName || null,
+                lastName: lastName || null,
+                fullName,
+                currency: currency || 'USD',
+              },
+            })
+
+            console.log('✅ [REGISTER] User created successfully:', user.id)
+
+            console.log('🎫 [REGISTER] Generating JWT token...')
+            const token = await jwt.sign({
               id: user.id,
               email: user.email,
-              firstName: user.firstName,
-              lastName: user.lastName,
-              token,
-            },
+            })
+
+            set.status = 201
+            console.log('🎉 [REGISTER] Registration successful for:', email)
+            
+            return {
+              success: true,
+              data: {
+                id: user.id,
+                email: user.email,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                token,
+              },
+            }
+          } catch (error) {
+            console.error('❌ [REGISTER] Error during registration:', error)
+            set.status = 500
+            const message = error instanceof Error ? error.message : 'Error al registrarse'
+            return {
+              success: false,
+              error: message,
+            }
           }
         },
         { body: registerSchema },
@@ -58,41 +83,64 @@ export const authRouter = new Elysia()
       .post(
         '/login',
         async ({ body, prisma, jwt, set }) => {
-          const { email, password } = body
+          try {
+            console.log('🔐 [LOGIN] Received request for:', body.email)
 
-          const user = await prisma.user.findUnique({
-            where: { email },
-          })
+            const { email, password } = body
 
-          if (!user) {
-            set.status = 404
-            throw new Error('User not found')
-          }
+            const user = await prisma.user.findUnique({
+              where: { email },
+            })
 
-          const passwordMatch = await verifyPassword(
-            password,
-            user.passwordHash,
-          )
+            if (!user) {
+              console.log('❌ [LOGIN] User not found:', email)
+              set.status = 404
+              return {
+                success: false,
+                error: 'Usuario no encontrado',
+              }
+            }
 
-          if (!passwordMatch) {
-            set.status = 401
-            throw new Error('Invalid password')
-          }
+            console.log('🔒 [LOGIN] Verifying password for:', email)
+            const passwordMatch = await verifyPassword(
+              password,
+              user.passwordHash,
+            )
 
-          const token = await jwt.sign({
-            id: user.id,
-            email: user.email,
-          })
+            if (!passwordMatch) {
+              console.log('❌ [LOGIN] Invalid password for:', email)
+              set.status = 401
+              return {
+                success: false,
+                error: 'Contraseña inválida',
+              }
+            }
 
-          return {
-            success: true,
-            data: {
+            console.log('🎫 [LOGIN] Generating JWT token for:', email)
+            const token = await jwt.sign({
               id: user.id,
               email: user.email,
-              firstName: user.firstName,
-              lastName: user.lastName,
-              token,
-            },
+            })
+
+            console.log('✅ [LOGIN] Login successful for:', email)
+            return {
+              success: true,
+              data: {
+                id: user.id,
+                email: user.email,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                token,
+              },
+            }
+          } catch (error) {
+            console.error('❌ [LOGIN] Error during login:', error)
+            set.status = 500
+            const message = error instanceof Error ? error.message : 'Error al iniciar sesión'
+            return {
+              success: false,
+              error: message,
+            }
           }
         },
         { body: credentialsSchema },

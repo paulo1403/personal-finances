@@ -13,10 +13,34 @@ export function DashboardPage() {
   if (isLoading) return <LoadingSpinner />;
 
   if (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Error al cargar el dashboard';
+    const axiosError = error as any;
+    const statusCode = axiosError?.response?.status;
+    const serverError = axiosError?.response?.data?.error;
+    
+    console.error('Dashboard error:', {
+      message: errorMessage,
+      status: statusCode,
+      serverError,
+      fullError: error,
+    });
+
     return (
       <div className="p-8">
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          Error al cargar el dashboard
+          <p className="font-bold">Error al cargar el dashboard</p>
+          <p className="text-sm mt-2">{serverError || errorMessage}</p>
+          {statusCode && <p className="text-sm">Status: {statusCode}</p>}
+        </div>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="p-8">
+        <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded">
+          No hay datos disponibles
         </div>
       </div>
     );
@@ -55,7 +79,7 @@ export function DashboardPage() {
           </div>
 
           {/* Gastos por categoría */}
-          {data.expensesByCategory.length > 0 && (
+          {data.expensesByCategory && data.expensesByCategory.length > 0 && (
             <div className="bg-white rounded-lg shadow p-6 mb-8">
               <h2 className="text-xl font-bold mb-4">Gastos por categoría</h2>
               <div className="space-y-3">
@@ -78,7 +102,7 @@ export function DashboardPage() {
           )}
 
           {/* Seguimiento de presupuestos */}
-          {data.budgetTracking.length > 0 && (
+          {data.budgetTracking && data.budgetTracking.length > 0 && (
             <div className="bg-white rounded-lg shadow p-6">
               <h2 className="text-xl font-bold mb-4">Seguimiento de presupuestos</h2>
               <div className="overflow-x-auto">
@@ -103,9 +127,9 @@ export function DashboardPage() {
                         <td className="px-4 py-2 text-right">{formatCurrency(budget.remaining)}</td>
                         <td className="px-4 py-2 text-right">
                           <span
-                            className={budget.percentageUsed > 90 ? 'text-red-600 font-bold' : ''}
+                            className={budget.percentage > 90 ? 'text-red-600 font-bold' : ''}
                           >
-                            {budget.percentageUsed.toFixed(1)}%
+                            {budget.percentage}%
                           </span>
                         </td>
                       </tr>

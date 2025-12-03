@@ -1,10 +1,11 @@
 import { Elysia } from 'elysia'
 import { createCategorySchema } from '../schemas'
-import { core } from '../plugins'
+import { core, authMiddleware } from '../plugins'
 import type { UserPayload } from '../types'
 
 export const categoriesRouter = new Elysia()
   .use(core)
+  .use(authMiddleware)
   .group('/api/categories', (app) =>
     app
       .get('/', async ({ prisma, user }) => {

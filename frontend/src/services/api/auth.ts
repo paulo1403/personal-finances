@@ -8,14 +8,19 @@ export const authService = {
     firstName?: string,
     lastName?: string,
     currency?: string,
-  ) =>
-    apiClient.post<ApiResponse<AuthResponse>>('/auth/register', {
+  ) => {
+    // Construir el objeto sin campos undefined
+    const payload: Record<string, any> = {
       email,
       password,
-      firstName,
-      lastName,
-      currency,
-    }),
+    }
+
+    if (firstName) payload.firstName = firstName
+    if (lastName) payload.lastName = lastName
+    if (currency) payload.currency = currency
+
+    return apiClient.post<ApiResponse<AuthResponse>>('/auth/register', payload)
+  },
 
   login: (email: string, password: string) =>
     apiClient.post<ApiResponse<AuthResponse>>('/auth/login', {

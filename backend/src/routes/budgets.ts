@@ -1,10 +1,11 @@
 import { Elysia } from 'elysia'
 import { createBudgetSchema } from '../schemas'
-import { core } from '../plugins'
+import { core, authMiddleware } from '../plugins'
 import type { UserPayload } from '../types'
 
 export const budgetsRouter = new Elysia()
   .use(core)
+  .use(authMiddleware)
   .group('/api/budgets', (app) =>
     app
       .get('/', async ({ query, prisma, user }) => {

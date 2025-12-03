@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { authService } from '../../services/api/auth'
 import { useAuthStore } from '../../services/store/useAuthStore'
+import { useNotificationStore } from '../../services/store/useNotificationStore'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Label } from '../ui/label'
@@ -17,13 +18,12 @@ export function AuthForm({ isLogin = true }: AuthFormProps) {
   const [lastName, setLastName] = useState('')
   const [currency, setCurrency] = useState('USD')
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
   const navigate = useNavigate()
   const setAuth = useAuthStore((state) => state.setAuth)
+  const addNotification = useNotificationStore((state) => state.addNotification)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError('')
     setLoading(true)
 
     try {
@@ -41,11 +41,18 @@ export function AuthForm({ isLogin = true }: AuthFormProps) {
           token,
         )
         localStorage.setItem('token', token)
-        navigate('/dashboard')
+        
+        const message = isLogin ? 'Sesión iniciada correctamente' : 'Cuenta creada exitosamente'
+        addNotification(message, 'success', 3000)
+        
+        setTimeout(() => {
+          navigate('/dashboard')
+        }, 500)
       }
     } catch (err) {
       const error = err as { response?: { data?: { error?: string } } }
-      setError(error.response?.data?.error || 'Error en la autenticación')
+      const errorMessage = error.response?.data?.error || (isLogin ? 'Error al iniciar sesión' : 'Error al registrarse')
+      addNotification(errorMessage, 'error')
     } finally {
       setLoading(false)
     }
@@ -53,12 +60,6 @@ export function AuthForm({ isLogin = true }: AuthFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {error && (
-        <div className="rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-red-900 dark:bg-red-900/20 dark:text-red-400">
-          {error}
-        </div>
-      )}
-
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
         <Input

@@ -1,10 +1,11 @@
 import { Elysia } from 'elysia'
 import { createTransactionSchema, bulkTransactionsSchema } from '../schemas'
-import { core } from '../plugins'
+import { core, authMiddleware } from '../plugins'
 import type { UserPayload } from '../types'
 
 export const transactionsRouter = new Elysia()
   .use(core)
+  .use(authMiddleware)
   .group('/api/transactions', (app) =>
     app
       .get('/', async ({ query, prisma, user }) => {

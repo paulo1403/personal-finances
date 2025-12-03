@@ -1,9 +1,10 @@
 import { Elysia } from 'elysia'
-import { core } from '../plugins'
+import { core, authMiddleware } from '../plugins'
 import type { UserPayload } from '../types'
 
 export const dashboardRouter = new Elysia()
   .use(core)
+  .use(authMiddleware)
   .group('/api/dashboard', (app) =>
     app.get('/summary', async ({ prisma, user }) => {
       const userId = (user as unknown as UserPayload).id
@@ -40,15 +41,18 @@ export const dashboardRouter = new Elysia()
         _sum: { amount: true },
       })
 
+      const totalExpensesByCategory = expensesByCategory.reduce((sum, exp) => sum + (exp._sum.amount || 0), 0)
+
       const categoriesWithExpenses = await Promise.all(
         expensesByCategory.map(async (exp) => {
           const category = await prisma.category.findUnique({
             where: { id: exp.categoryId },
           })
+          const amount = exp._sum.amount || 0
           return {
-            categoryId: exp.categoryId,
-            categoryName: category?.name || 'Unknown',
-            amount: exp._sum.amount || 0,
+            category: category?.name || 'Unknown',
+            total: amount,
+            percentage: totalExpensesByCategory > 0 ? Math.round((amount / totalExpensesByCategory) * 100) : 0,
           }
         }),
       )
@@ -72,7 +76,7 @@ export const dashboardRouter = new Elysia()
         include: { category: true },
       })
 
-      const budgetStatus = await Promise.all(
+      const budgetTracking = await Promise.all(
         budgets.map(async (budget) => {
           const spent = await prisma.transaction.aggregate({
             where: {
@@ -87,14 +91,15 @@ export const dashboardRouter = new Elysia()
             _sum: { amount: true },
           })
 
+          const spentAmount = spent._sum.amount || 0
+          const remaining = budget.amount - spentAmount
+
           return {
-            budgetId: budget.id,
-            categoryName: budget.category.name,
-            budgetAmount: budget.amount,
-            spentAmount: spent._sum.amount || 0,
-            percentage: Math.round(
-              ((spent._sum.amount || 0) / budget.amount) * 100,
-            ),
+            category: budget.category.name,
+            budget: budget.amount,
+            spent: spentAmount,
+            remaining: remaining,
+            percentage: Math.round((spentAmount / budget.amount) * 100),
           }
         }),
       )
@@ -107,7 +112,7 @@ export const dashboardRouter = new Elysia()
           totalExpenses,
           expensesByCategory: categoriesWithExpenses,
           recentTransactions,
-          budgetStatus,
+          budgetTracking,
         },
       }
     }),

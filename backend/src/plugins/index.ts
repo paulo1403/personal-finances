@@ -43,11 +43,19 @@ export const basePlugin = new Elysia()
     }),
   )
 
-  // 3️⃣ Logger sencillo
-  .onBeforeHandle(({ request }) => {
-    console.log(
-      `[${new Date().toISOString()}] ${request.method} ${request.url}`,
-    )
+  // 3️⃣ Logger detallado
+  .onBeforeHandle(({ request, body }) => {
+    const timestamp = new Date().toISOString()
+    const method = request.method
+    const url = request.url
+    const hasBody = body !== undefined && body !== null
+    
+    if (hasBody) {
+      console.log(`[${timestamp}] ${method} ${url}`)
+      console.log('📦 Body:', JSON.stringify(body, null, 2))
+    } else {
+      console.log(`[${timestamp}] ${method} ${url}`)
+    }
   })
 
   // 4️⃣ Manejo de errores personalizados
@@ -57,7 +65,24 @@ export const basePlugin = new Elysia()
   .error('INVALID_INPUT', InvalidInputError)
 
   // 5️⃣ Handlers para errores personalizados
-  .onError(({ code, error, set }) => {
+  .onError(({ code, error, set, request }) => {
+    const timestamp = new Date().toISOString()
+    console.error(`[${timestamp}] ❌ ERROR CODE: ${code}`)
+    console.error(`📍 URL: ${request.method} ${request.url}`)
+    console.error(`📝 Message:`, error instanceof Error ? error.message : error)
+    if (error instanceof Error && error.stack) {
+      console.error(`📎 Stack:`, error.stack)
+    }
+
+    if (code === 'PARSE') {
+      set.status = 400
+      return {
+        success: false,
+        error: '❌ Invalid request body - Check your input',
+        details: error instanceof Error ? error.message : 'Validation error',
+      }
+    }
+
     if (code === 'UNAUTHORIZED') {
       set.status = 401
       return {
@@ -92,7 +117,7 @@ export const basePlugin = new Elysia()
 
     // Error genérico
     const errorMessage = error instanceof Error ? error.message : 'Internal Server Error'
-    console.error(`❌ Error: ${errorMessage}`)
+    console.error(`❌ Unhandled error: ${errorMessage}`)
     set.status = 500
     return {
       success: false,
@@ -100,10 +125,11 @@ export const basePlugin = new Elysia()
     }
   })
 
-export const core = basePlugin
-  // 6️⃣ Decorador para user (se utiliza en rutas protegidas)
-  .derive({ as: 'scoped' }, async ({ headers, jwt: jwtInstance, set }) => {
+// 6️⃣ Crear middleware de autenticación separado
+export const authMiddleware = (app: Elysia) =>
+  app.derive(async ({ headers, jwt: jwtInstance, set }) => {
     const auth = headers.authorization
+
     if (!auth?.startsWith('Bearer ')) {
       set.status = 401
       throw new UnauthorizedError('Missing Authorization header')
@@ -118,4 +144,7 @@ export const core = basePlugin
       throw new UnauthorizedError('Invalid token')
     }
   })
+
+// Export core sin el derive - se agregará manualmente en rutas que lo necesiten
+export const core = basePlugin
 
