@@ -1,6 +1,6 @@
-import { useAuth } from '../hooks/useAuth';
-import { Navbar } from './common/Navbar';
-import { Sidebar } from './common/Sidebar';
+import { useAuth } from '../../hooks/useAuth'
+import { Navbar } from '../common/Navbar'
+import { Sidebar } from '../common/Sidebar'
 
 interface RootLayoutProps {
   children: React.ReactNode;
