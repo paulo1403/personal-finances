@@ -1,16 +1,16 @@
 import { Elysia } from 'elysia'
 import { hashPassword, verifyPassword } from '../utils/auth'
-import { credentialsSchema } from '../schemas'
-import { core } from '../plugins'
+import { credentialsSchema, registerSchema } from '../schemas'
+import { basePlugin } from '../plugins'
 
 export const authRouter = new Elysia()
-  .use(core)
+  .use(basePlugin)
   .group('/auth', (app) =>
     app
       .post(
         '/register',
         async ({ body, prisma, jwt, set }) => {
-          const { email, password } = body
+          const { email, password, firstName, lastName, currency } = body
 
           // Check if user already exists
           const existingUser = await prisma.user.findUnique({
@@ -23,10 +23,16 @@ export const authRouter = new Elysia()
           }
 
           const passwordHash = await hashPassword(password)
+          const fullName = [firstName, lastName].filter(Boolean).join(' ') || undefined
+
           const user = await prisma.user.create({
             data: {
               email,
               passwordHash,
+              firstName,
+              lastName,
+              fullName,
+              currency: currency || 'USD',
             },
           })
 
@@ -39,15 +45,15 @@ export const authRouter = new Elysia()
           return {
             success: true,
             data: {
-              user: {
-                id: user.id,
-                email: user.email,
-              },
+              id: user.id,
+              email: user.email,
+              firstName: user.firstName,
+              lastName: user.lastName,
               token,
             },
           }
         },
-        { body: credentialsSchema },
+        { body: registerSchema },
       )
       .post(
         '/login',
@@ -81,10 +87,10 @@ export const authRouter = new Elysia()
           return {
             success: true,
             data: {
-              user: {
-                id: user.id,
-                email: user.email,
-              },
+              id: user.id,
+              email: user.email,
+              firstName: user.firstName,
+              lastName: user.lastName,
               token,
             },
           }

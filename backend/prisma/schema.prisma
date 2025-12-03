@@ -9,11 +9,15 @@ datasource db {
 }
 
 model User {
-  id        String     @id @default(cuid())
-  email     String     @unique
+  id           String   @id @default(cuid())
+  email        String   @unique
   passwordHash String
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  firstName    String?
+  lastName     String?
+  fullName     String?
+  currency     String   @default("USD")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   transactions Transaction[]
   categories   Category[]

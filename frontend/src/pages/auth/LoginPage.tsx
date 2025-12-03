@@ -7,11 +7,11 @@ export function LoginPage() {
   const [isLogin, setIsLogin] = useState(true)
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-slate-900 dark:to-slate-950">
       <div className="w-full max-w-md">
         <Card>
           <CardHeader className="space-y-2">
-            <CardTitle className="text-3xl text-center">💰 Personal Finances</CardTitle>
+            <CardTitle className="text-center text-3xl">💰 Personal Finances</CardTitle>
             <CardDescription className="text-center">
               {isLogin ? 'Inicia sesión en tu cuenta' : 'Crea una nueva cuenta'}
             </CardDescription>
@@ -23,7 +23,7 @@ export function LoginPage() {
             <div className="mt-6 space-y-2 text-center">
               {isLogin ? (
                 <>
-                  <p className="text-sm text-slate-600">¿No tienes cuenta?</p>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">¿No tienes cuenta?</p>
                   <Button
                     type="button"
                     variant="link"
@@ -34,7 +34,7 @@ export function LoginPage() {
                 </>
               ) : (
                 <>
-                  <p className="text-sm text-slate-600">¿Ya tienes cuenta?</p>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">¿Ya tienes cuenta?</p>
                   <Button
                     type="button"
                     variant="link"

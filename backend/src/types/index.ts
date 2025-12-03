@@ -44,6 +44,17 @@ export interface AuthPayload {
   password: string;
 }
 
+export interface UserPayload {
+  id: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  fullName?: string;
+  currency?: string;
+  iat?: number;
+  exp?: number;
+}
+
 export type AppContext = {
   prisma: PrismaClient;
 };

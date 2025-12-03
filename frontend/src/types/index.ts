@@ -7,16 +7,21 @@ export interface ApiResponse<T> {
 
 // Auth Types
 export interface User {
-  id: string;
-  email: string;
-  createdAt: string;
-  updatedAt: string;
+  id: string
+  email: string
+  firstName?: string
+  lastName?: string
+  currency?: string
+  createdAt?: string
+  updatedAt?: string
 }
 
 export interface AuthResponse {
-  id: string;
-  email: string;
-  token: string;
+  id: string
+  email: string
+  firstName?: string
+  lastName?: string
+  token: string
 }
 
 // Category Types

@@ -1,6 +1,7 @@
 import { Elysia } from 'elysia'
 import { createCategorySchema } from '../schemas'
 import { core } from '../plugins'
+import type { UserPayload } from '../types'
 
 export const categoriesRouter = new Elysia()
   .use(core)
@@ -8,7 +9,7 @@ export const categoriesRouter = new Elysia()
     app
       .get('/', async ({ prisma, user }) => {
         const categories = await prisma.category.findMany({
-          where: { userId: (user as any).id },
+          where: { userId: (user as unknown as UserPayload).id },
           orderBy: { createdAt: 'desc' },
         })
 
@@ -21,7 +22,7 @@ export const categoriesRouter = new Elysia()
         '/',
         async ({ body, prisma, user, set }) => {
           const { name } = body
-          const userId = (user as any).id
+          const userId = (user as unknown as UserPayload).id
 
           const category = await prisma.category.create({
             data: {
@@ -42,7 +43,7 @@ export const categoriesRouter = new Elysia()
         '/:id',
         async ({ params, body, prisma, user, set }) => {
           const { name } = body
-          const userId = (user as any).id
+          const userId = (user as unknown as UserPayload).id
 
           const category = await prisma.category.findUnique({
             where: { id: params.id },
@@ -66,7 +67,7 @@ export const categoriesRouter = new Elysia()
         { body: createCategorySchema },
       )
       .delete('/:id', async ({ params, prisma, user, set }) => {
-        const userId = (user as any).id
+        const userId = (user as unknown as UserPayload).id
 
         const category = await prisma.category.findUnique({
           where: { id: params.id },

@@ -1,11 +1,12 @@
 import { Elysia } from 'elysia'
 import { core } from '../plugins'
+import type { UserPayload } from '../types'
 
 export const dashboardRouter = new Elysia()
   .use(core)
   .group('/api/dashboard', (app) =>
     app.get('/summary', async ({ prisma, user }) => {
-      const userId = (user as any).id
+      const userId = (user as unknown as UserPayload).id
 
       // Get total income and expenses
       const transactions = await prisma.transaction.groupBy({

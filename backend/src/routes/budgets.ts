@@ -1,19 +1,20 @@
 import { Elysia } from 'elysia'
 import { createBudgetSchema } from '../schemas'
 import { core } from '../plugins'
+import type { UserPayload } from '../types'
 
 export const budgetsRouter = new Elysia()
   .use(core)
   .group('/api/budgets', (app) =>
     app
       .get('/', async ({ query, prisma, user }) => {
-        const userId = (user as any).id
+        const userId = (user as unknown as UserPayload).id
         const { month, year } = query as { month?: string; year?: string }
 
-        const where: any = { userId }
+        const where: { userId: string; month?: number; year?: number } = { userId }
 
-        if (month) where.month = parseInt(month)
-        if (year) where.year = parseInt(year)
+        if (month) where.month = parseInt(month, 10)
+        if (year) where.year = parseInt(year, 10)
 
         const budgets = await prisma.budget.findMany({
           where,
@@ -29,8 +30,8 @@ export const budgetsRouter = new Elysia()
       .post(
         '/',
         async ({ body, prisma, user, set }) => {
-          const data = body as any
-          const userId = (user as any).id
+          const data = body as { categoryId: string; month: number; year: number; amount: number }
+          const userId = (user as unknown as UserPayload).id
 
           // Verify category belongs to user
           const category = await prisma.category.findUnique({
@@ -69,7 +70,7 @@ export const budgetsRouter = new Elysia()
         { body: createBudgetSchema },
       )
       .delete('/:id', async ({ params, prisma, user, set }) => {
-        const userId = (user as any).id
+        const userId = (user as unknown as UserPayload).id
 
         const budget = await prisma.budget.findUnique({
           where: { id: params.id },

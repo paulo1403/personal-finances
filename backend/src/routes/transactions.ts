@@ -1,13 +1,14 @@
 import { Elysia } from 'elysia'
 import { createTransactionSchema, bulkTransactionsSchema } from '../schemas'
 import { core } from '../plugins'
+import type { UserPayload } from '../types'
 
 export const transactionsRouter = new Elysia()
   .use(core)
   .group('/api/transactions', (app) =>
     app
       .get('/', async ({ query, prisma, user }) => {
-        const userId = (user as any).id
+        const userId = (user as unknown as UserPayload).id
         const { type, categoryId, startDate, endDate } = query as {
           type?: string
           categoryId?: string
@@ -15,7 +16,7 @@ export const transactionsRouter = new Elysia()
           endDate?: string
         }
 
-        const where: any = { userId }
+        const where: { userId: string; type?: string; categoryId?: string; date?: { gte?: Date; lte?: Date } } = { userId }
 
         if (type) where.type = type
         if (categoryId) where.categoryId = categoryId
@@ -39,8 +40,8 @@ export const transactionsRouter = new Elysia()
       .post(
         '/',
         async ({ body, prisma, user, set }) => {
-          const data = body as any
-          const userId = (user as any).id
+          const data = body as { categoryId: string; amount: number; date: string; type: string; description?: string }
+          const userId = (user as unknown as UserPayload).id
 
           // Verify category belongs to user
           const category = await prisma.category.findUnique({
@@ -72,8 +73,8 @@ export const transactionsRouter = new Elysia()
       .put(
         '/:id',
         async ({ params, body, prisma, user, set }) => {
-          const data = body as any
-          const userId = (user as any).id
+          const data = body as { categoryId: string; amount: number; date: string; type: string; description?: string }
+          const userId = (user as unknown as UserPayload).id
 
           const transaction = await prisma.transaction.findUnique({
             where: { id: params.id },
@@ -101,7 +102,7 @@ export const transactionsRouter = new Elysia()
         { body: createTransactionSchema },
       )
       .delete('/:id', async ({ params, prisma, user, set }) => {
-        const userId = (user as any).id
+        const userId = (user as unknown as UserPayload).id
 
         const transaction = await prisma.transaction.findUnique({
           where: { id: params.id },
@@ -124,8 +125,8 @@ export const transactionsRouter = new Elysia()
       .post(
         '/bulk',
         async ({ body, prisma, user, set }) => {
-          const transactions = body as Array<any>
-          const userId = (user as any).id
+          const transactions = body as Array<{ categoryId: string; amount: number; date: string; type: string; description?: string }>
+          const userId = (user as unknown as UserPayload).id
 
           const created = await prisma.transaction.createMany({
             data: transactions.map((t) => ({

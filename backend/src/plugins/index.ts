@@ -31,7 +31,7 @@ export class InvalidInputError extends Error {
   }
 }
 
-export const core = new Elysia()
+export const basePlugin = new Elysia()
   // 1️⃣ Prisma global
   .decorate('prisma', prisma)
 
@@ -100,6 +100,7 @@ export const core = new Elysia()
     }
   })
 
+export const core = basePlugin
   // 6️⃣ Decorador para user (se utiliza en rutas protegidas)
   .derive({ as: 'scoped' }, async ({ headers, jwt: jwtInstance, set }) => {
     const auth = headers.authorization
